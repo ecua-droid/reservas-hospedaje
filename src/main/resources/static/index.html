@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospedaje La Ceiba | Reservas de habitaciones</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛏️</text></svg>">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/estilos.css" rel="stylesheet">
+</head>
+
+<body>
+
+<header class="encabezado">
+    <div class="container py-4">
+        <h1 class="h2 mb-1">🛏️ Hospedaje <span class="acento">La Ceiba</span></h1>
+        <p class="mb-0">Registro de habitaciones y reservas sin traslapes de fechas</p>
+    </div>
+</header>
+
+<!-- Mensajes de éxito y error (aparecen arriba a la derecha) -->
+<div id="mensaje" class="mensaje-flotante" aria-live="polite"></div>
+
+<main class="container my-4">
+
+    <!-- ===================== INDICADORES ===================== -->
+    <section class="row g-3 mb-4" aria-label="Indicadores">
+        <div class="col-6 col-lg-3">
+            <div class="card indicador h-100">
+                <div class="card-body">
+                    <small>Reservas activas</small>
+                    <strong id="indReservasActivas">–</strong>
+                    <span class="detalle" id="indReservasDetalle">&nbsp;</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card indicador h-100">
+                <div class="card-body">
+                    <small>Ocupación hoy</small>
+                    <strong id="indOcupacion">–</strong>
+                    <span class="detalle" id="indOcupacionDetalle">&nbsp;</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card indicador h-100">
+                <div class="card-body">
+                    <small>Habitaciones activas</small>
+                    <strong id="indHabitaciones">–</strong>
+                    <span class="detalle" id="indHabitacionesDetalle">&nbsp;</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card indicador acento h-100">
+                <div class="card-body">
+                    <small>Total estimado (activas)</small>
+                    <strong id="indIngreso">–</strong>
+                    <span class="detalle">Suma de reservas activas</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================== PESTAÑAS ===================== -->
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-reservas" data-bs-toggle="tab"
+                    data-bs-target="#panel-reservas" type="button" role="tab">Reservas</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-habitaciones" data-bs-toggle="tab"
+                    data-bs-target="#panel-habitaciones" type="button" role="tab">Habitaciones</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-disponibilidad" data-bs-toggle="tab"
+                    data-bs-target="#panel-disponibilidad" type="button" role="tab">Disponibilidad</button>
+        </li>
+    </ul>
+
+    <div class="tab-content pt-4">
+
+        <!-- ===================== RESERVAS ===================== -->
+        <div class="tab-pane fade show active" id="panel-reservas" role="tabpanel">
+            <div class="row g-4">
+
+                <!-- Formulario de reserva -->
+                <section class="col-lg-4">
+                    <div class="card tarjeta tarjeta-formulario">
+                        <div class="card-body p-4">
+                            <h2 id="tituloFormReserva" class="h5 mb-3">Nueva reserva</h2>
+
+                            <form id="formReserva" novalidate>
+                                <input type="hidden" name="idEdicion">
+
+                                <div class="mb-3">
+                                    <label for="reservaHabitacion" class="form-label">Habitación</label>
+                                    <select id="reservaHabitacion" name="habitacionId" class="form-select">
+                                        <option value="">Cargando habitaciones...</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="reservaNombre" class="form-label">Nombre del huésped</label>
+                                    <input type="text" id="reservaNombre" name="nombreHuesped" class="form-control"
+                                           maxlength="100" placeholder="Nombre completo">
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-sm-6 mb-3">
+                                        <label for="reservaDocumento" class="form-label">Documento</label>
+                                        <input type="text" id="reservaDocumento" name="documentoHuesped"
+                                               class="form-control" maxlength="20" placeholder="DPI o pasaporte">
+                                    </div>
+                                    <div class="col-sm-6 mb-3">
+                                        <label for="reservaTelefono" class="form-label">Teléfono <span class="text-secondary small">(opcional)</span></label>
+                                        <input type="tel" id="reservaTelefono" name="telefonoHuesped"
+                                               class="form-control" maxlength="15" placeholder="5555-5555">
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="reservaHuespedes" class="form-label">Cantidad de huéspedes</label>
+                                    <input type="number" id="reservaHuespedes" name="cantidadHuespedes"
+                                           class="form-control" min="1" max="10" value="1">
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-sm-6 mb-3">
+                                        <label for="reservaEntrada" class="form-label">Entrada</label>
+                                        <input type="date" id="reservaEntrada" name="fechaEntrada" class="form-control">
+                                    </div>
+                                    <div class="col-sm-6 mb-3">
+                                        <label for="reservaSalida" class="form-label">Salida</label>
+                                        <input type="date" id="reservaSalida" name="fechaSalida" class="form-control">
+                                    </div>
+                                </div>
+
+                                <!-- Total estimado calculado por la API -->
+                                <div id="cotizacion" class="cotizacion mb-3">
+                                    Seleccione habitación y fechas para calcular el total estimado.
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <button type="submit" id="btnGuardarReserva" class="btn btn-principal">Guardar reserva</button>
+                                    <button type="button" id="btnLimpiarReserva" class="btn btn-outline-secondary">Limpiar formulario</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Listado de reservas -->
+                <section class="col-lg-8">
+                    <div class="card tarjeta">
+                        <div class="card-body p-4">
+                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
+                                <div>
+                                    <h2 class="h5 mb-1">Reservas</h2>
+                                    <small class="text-secondary" id="filtroActual">Todas las reservas</small>
+                                </div>
+                                <div class="btn-group" role="group" aria-label="Filtros">
+                                    <button type="button" id="btnTodas" class="btn btn-outline-secondary btn-sm active">Todas</button>
+                                    <button type="button" id="btnActivas" class="btn btn-outline-secondary btn-sm">Activas</button>
+                                </div>
+                            </div>
+
+                            <!-- Filtro: reservas por huésped -->
+                            <form id="formBuscarHuesped" class="input-group mb-3" novalidate>
+                                <input type="search" name="texto" class="form-control"
+                                       placeholder="Buscar por nombre o documento del huésped">
+                                <button type="submit" class="btn btn-principal">Buscar huésped</button>
+                            </form>
+
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Habitación</th>
+                                        <th>Huésped</th>
+                                        <th>Fechas</th>
+                                        <th class="text-center">Noches</th>
+                                        <th class="text-end">Total</th>
+                                        <th>Estado</th>
+                                        <th class="text-end">Acciones</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="tablaReservas">
+                                    <tr><td colspan="8" class="text-center py-4 text-secondary">Cargando reservas...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- ===================== HABITACIONES ===================== -->
+        <div class="tab-pane fade" id="panel-habitaciones" role="tabpanel">
+            <div class="row g-4">
+
+                <section class="col-lg-4">
+                    <div class="card tarjeta tarjeta-formulario">
+                        <div class="card-body p-4">
+                            <h2 id="tituloFormHabitacion" class="h5 mb-3">Registrar habitación</h2>
+
+                            <form id="formHabitacion" novalidate>
+                                <input type="hidden" name="idEdicion">
+
+                                <div class="row">
+                                    <div class="col-sm-6 mb-3">
+                                        <label for="habNumero" class="form-label">Número</label>
+                                        <input type="text" id="habNumero" name="numero" class="form-control"
+                                               maxlength="10" placeholder="Ej. 105">
+                                    </div>
+                                    <div class="col-sm-6 mb-3">
+                                        <label for="habTipo" class="form-label">Tipo</label>
+                                        <select id="habTipo" name="tipo" class="form-select">
+                                            <option value="">Seleccione</option>
+                                            <option value="SENCILLA">Sencilla</option>
+                                            <option value="DOBLE">Doble</option>
+                                            <option value="TRIPLE">Triple</option>
+                                            <option value="SUITE">Suite</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-sm-6 mb-3">
+                                        <label for="habCapacidad" class="form-label">Capacidad</label>
+                                        <input type="number" id="habCapacidad" name="capacidad" class="form-control"
+                                               min="1" max="10" placeholder="2">
+                                    </div>
+                                    <div class="col-sm-6 mb-3">
+                                        <label for="habTarifa" class="form-label">Tarifa por noche (Q)</label>
+                                        <input type="number" id="habTarifa" name="tarifaNoche" class="form-control"
+                                               min="0.01" step="0.01" placeholder="350.00">
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="habDescripcion" class="form-label">Descripción <span class="text-secondary small">(opcional)</span></label>
+                                    <textarea id="habDescripcion" name="descripcion" class="form-control" rows="2"
+                                              maxlength="200" placeholder="Camas, vista, nivel..."></textarea>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <button type="submit" id="btnGuardarHabitacion" class="btn btn-principal">Guardar habitación</button>
+                                    <button type="button" id="btnLimpiarHabitacion" class="btn btn-outline-secondary">Limpiar formulario</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="col-lg-8">
+                    <div class="card tarjeta">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h2 class="h5 mb-1">Habitaciones</h2>
+                                    <small class="text-secondary">Desactivar no borra la habitación: conserva su historial de reservas</small>
+                                </div>
+                                <button type="button" id="btnRecargarHabitaciones" class="btn btn-outline-secondary btn-sm">Actualizar</button>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead>
+                                    <tr>
+                                        <th>Número</th>
+                                        <th>Tipo</th>
+                                        <th class="text-center">Capacidad</th>
+                                        <th class="text-end">Tarifa/noche</th>
+                                        <th>Estado</th>
+                                        <th class="text-end">Acciones</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="tablaHabitaciones">
+                                    <tr><td colspan="6" class="text-center py-4 text-secondary">Cargando habitaciones...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- ===================== DISPONIBILIDAD ===================== -->
+        <div class="tab-pane fade" id="panel-disponibilidad" role="tabpanel">
+            <div class="card tarjeta">
+                <div class="card-body p-4">
+                    <h2 class="h5 mb-1">Habitaciones disponibles por periodo</h2>
+                    <p class="text-secondary small mb-3">Muestra las habitaciones activas sin reservas activas en esas fechas y el total estimado de cada una.</p>
+
+                    <form id="formDisponibilidad" class="row g-3 align-items-end mb-4" novalidate>
+                        <div class="col-sm-4 col-lg-3">
+                            <label for="dispEntrada" class="form-label">Entrada</label>
+                            <input type="date" id="dispEntrada" name="entrada" class="form-control">
+                        </div>
+                        <div class="col-sm-4 col-lg-3">
+                            <label for="dispSalida" class="form-label">Salida</label>
+                            <input type="date" id="dispSalida" name="salida" class="form-control">
+                        </div>
+                        <div class="col-sm-4 col-lg-2">
+                            <label for="dispHuespedes" class="form-label">Huéspedes</label>
+                            <input type="number" id="dispHuespedes" name="huespedes" class="form-control" min="1" max="10" value="1">
+                        </div>
+                        <div class="col-lg-4 d-grid">
+                            <button type="submit" class="btn btn-principal">Buscar disponibilidad</button>
+                        </div>
+                    </form>
+
+                    <p class="fw-semibold mb-2" id="resultadoDisponibilidad"></p>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                            <tr>
+                                <th>Número</th>
+                                <th>Tipo</th>
+                                <th class="text-center">Capacidad</th>
+                                <th class="text-end">Tarifa/noche</th>
+                                <th class="text-center">Noches</th>
+                                <th class="text-end">Total estimado</th>
+                                <th class="text-end">Acción</th>
+                            </tr>
+                            </thead>
+                            <tbody id="tablaDisponibles">
+                            <tr><td colspan="7" class="text-center py-4 text-secondary">Elija las fechas y presione "Buscar disponibilidad".</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="text-center py-4">
+    <small>Programación II · Proyecto final · API REST con Spring Boot y PostgreSQL</small>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

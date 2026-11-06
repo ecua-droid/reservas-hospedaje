@@ -1,0 +1,172 @@
+/* =========================================================
+ * Hospedaje La Ceiba - estilos propios (complementan Bootstrap)
+ * ========================================================= */
+
+:root {
+    --color-principal: #1f5f5b;
+    --color-principal-oscuro: #15433f;
+    --color-acento: #d4a24c;
+    --color-fondo: #f5f3ee;
+    --color-texto: #23312f;
+    --color-suave: #5d6d6a;
+    --sombra: 0 8px 26px rgba(31, 61, 58, 0.10);
+}
+
+body {
+    background-color: var(--color-fondo);
+    color: var(--color-texto);
+    min-height: 100vh;
+}
+
+/* ---------- Encabezado ---------- */
+.encabezado {
+    color: #fff;
+    background: linear-gradient(135deg, #15433f 0%, #1f5f5b 55%, #2f7d6d 100%);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
+}
+
+.encabezado h1 {
+    font-weight: 700;
+}
+
+.encabezado .acento {
+    color: var(--color-acento);
+}
+
+.encabezado p {
+    opacity: 0.9;
+}
+
+/* ---------- Tarjetas ---------- */
+.tarjeta {
+    border: none;
+    border-radius: 16px;
+    box-shadow: var(--sombra);
+}
+
+.tarjeta-formulario {
+    position: sticky;
+    top: 20px;
+}
+
+/* ---------- Indicadores ---------- */
+.indicador {
+    border: none;
+    border-left: 5px solid var(--color-principal);
+    border-radius: 14px;
+    box-shadow: var(--sombra);
+}
+
+.indicador.acento {
+    border-left-color: var(--color-acento);
+}
+
+.indicador small {
+    display: block;
+    color: var(--color-suave);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.indicador strong {
+    display: block;
+    font-size: 1.6rem;
+    line-height: 1.3;
+}
+
+.indicador .detalle {
+    display: block;
+    color: var(--color-suave);
+    font-size: 0.8rem;
+}
+
+/* ---------- Pestañas ---------- */
+.nav-tabs .nav-link {
+    color: var(--color-principal);
+    font-weight: 500;
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--color-principal-oscuro);
+    font-weight: 600;
+}
+
+/* ---------- Botones y campos ---------- */
+.btn-principal {
+    color: #fff;
+    background-color: var(--color-principal);
+    border: none;
+    border-radius: 10px;
+}
+
+.btn-principal:hover,
+.btn-principal:focus {
+    color: #fff;
+    background-color: var(--color-principal-oscuro);
+}
+
+.form-control,
+.form-select {
+    border-radius: 10px;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--color-principal);
+    box-shadow: 0 0 0 0.2rem rgba(31, 95, 91, 0.18);
+}
+
+/* ---------- Tablas ---------- */
+.table thead th {
+    color: var(--color-principal);
+    font-size: 0.8rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.table .btn-sm {
+    margin-left: 2px;
+}
+
+/* ---------- Total estimado (cotización) ---------- */
+.cotizacion {
+    padding: 0.75rem 1rem;
+    border: 1px dashed #b9c6c3;
+    border-radius: 12px;
+    background: #fafaf7;
+    color: var(--color-suave);
+    font-size: 0.9rem;
+}
+
+.cotizacion-ok {
+    border: 1px solid #9fd3b5;
+    background: #eef8f2;
+    color: #1d5a37;
+}
+
+.cotizacion-error {
+    border: 1px solid #f1b0b7;
+    background: #fdf0f1;
+    color: #842029;
+}
+
+/* ---------- Mensajes flotantes ---------- */
+.mensaje-flotante {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 1080;
+    width: min(460px, calc(100% - 32px));
+}
+
+footer {
+    color: var(--color-suave);
+}
+
+@media (max-width: 991px) {
+    .tarjeta-formulario {
+        position: static;
+    }
+}
