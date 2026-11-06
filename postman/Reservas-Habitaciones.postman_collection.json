@@ -1,0 +1,1055 @@
+{
+  "info": {
+    "name": "Reservas de habitaciones - API REST",
+    "description": "Pruebas de la API del proyecto Reservas de habitaciones (Spring Boot + PostgreSQL).\n\nAntes de ejecutar: correr database/01_estructura.sql y database/02_datos_prueba.sql, e iniciar el backend en http://localhost:8080.\nEjecutar las carpetas en orden (1 a 4) o la colección completa con Run.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Fechas relativas a hoy para que la colección funcione cualquier día",
+          "function sumarDias(dias) {",
+          "    const f = new Date();",
+          "    f.setDate(f.getDate() + dias);",
+          "    return f.getFullYear() + '-' + String(f.getMonth() + 1).padStart(2, '0') + '-' + String(f.getDate()).padStart(2, '0');",
+          "}",
+          "pm.collectionVariables.set('ayer', sumarDias(-1));",
+          "pm.collectionVariables.set('hoyMas1', sumarDias(1));",
+          "pm.collectionVariables.set('hoyMas3', sumarDias(3));",
+          "pm.collectionVariables.set('entradaPrueba', sumarDias(30));",
+          "pm.collectionVariables.set('salidaPrueba', sumarDias(33));",
+          "pm.collectionVariables.set('salidaPruebaModificada', sumarDias(34));"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "numeroNuevo",
+      "value": ""
+    },
+    {
+      "key": "habitacionNuevaId",
+      "value": ""
+    },
+    {
+      "key": "reservaNuevaId",
+      "value": ""
+    },
+    {
+      "key": "ayer",
+      "value": ""
+    },
+    {
+      "key": "hoyMas1",
+      "value": ""
+    },
+    {
+      "key": "hoyMas3",
+      "value": ""
+    },
+    {
+      "key": "entradaPrueba",
+      "value": ""
+    },
+    {
+      "key": "salidaPrueba",
+      "value": ""
+    },
+    {
+      "key": "salidaPruebaModificada",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Habitaciones",
+      "description": "CRUD de la entidad Habitación. Ejecutar en orden.",
+      "item": [
+        {
+          "name": "Listar habitaciones",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Devuelve una lista\", () => pm.expect(pm.response.json()).to.be.an(\"array\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/habitaciones",
+            "description": ""
+          }
+        },
+        {
+          "name": "Listar solo habitaciones activas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Todas activas\", () => pm.response.json().forEach(h => pm.expect(h.activa).to.eql(true)));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/habitaciones?activas=true",
+            "description": ""
+          }
+        },
+        {
+          "name": "Consultar habitación por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/habitaciones/3",
+            "description": ""
+          }
+        },
+        {
+          "name": "Registrar habitación",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"numeroNuevo\", \"T\" + Date.now().toString().slice(-6));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"habitacionNuevaId\", pm.response.json().id);",
+                  "pm.test(\"Queda activa\", () => pm.expect(pm.response.json().activa).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/habitaciones",
+            "description": "Crea una habitación con número único y guarda su ID en la variable habitacionNuevaId.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numero\": \"{{numeroNuevo}}\",\n  \"tipo\": \"DOBLE\",\n  \"capacidad\": 2,\n  \"tarifaNoche\": 380.0,\n  \"descripcion\": \"Habitación creada desde Postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Modificar habitación",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Tarifa actualizada\", () => pm.expect(Number(pm.response.json().tarifaNoche)).to.eql(420));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/habitaciones/{{habitacionNuevaId}}",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numero\": \"{{numeroNuevo}}\",\n  \"tipo\": \"TRIPLE\",\n  \"capacidad\": 3,\n  \"tarifaNoche\": 420.0,\n  \"descripcion\": \"Habitación modificada desde Postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Desactivar habitación (eliminación lógica)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/habitaciones/{{habitacionNuevaId}}",
+            "description": "DELETE no borra la fila: cambia activa a false para conservar el historial."
+          }
+        },
+        {
+          "name": "Activar habitación",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/habitaciones/{{habitacionNuevaId}}/activar",
+            "description": ""
+          }
+        },
+        {
+          "name": "Reservas de una habitación (relación 1:N)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/habitaciones/3/reservas",
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Reservas",
+      "description": "CRUD de la entidad Reserva y operación de negocio. Ejecutar después de la carpeta 1.",
+      "item": [
+        {
+          "name": "Listar reservas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/reservas",
+            "description": ""
+          }
+        },
+        {
+          "name": "Consultar reserva por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/reservas/1",
+            "description": ""
+          }
+        },
+        {
+          "name": "Registrar reserva",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));",
+                  "const r = pm.response.json();",
+                  "pm.collectionVariables.set(\"reservaNuevaId\", r.id);",
+                  "pm.test(\"Estado ACTIVA\", () => pm.expect(r.estado).to.eql(\"ACTIVA\"));",
+                  "pm.test(\"Total = noches x tarifa\", () => pm.expect(Number(r.total)).to.eql(r.noches * Number(r.tarifaNoche)));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reservas",
+            "description": "Operación de negocio: valida fechas, capacidad y traslapes, y calcula noches y total.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"habitacionId\": {{habitacionNuevaId}},\n  \"nombreHuesped\": \"Huésped de Prueba Postman\",\n  \"documentoHuesped\": \"DPI-200001\",\n  \"telefonoHuesped\": \"5550-2001\",\n  \"cantidadHuespedes\": 2,\n  \"fechaEntrada\": \"{{entradaPrueba}}\",\n  \"fechaSalida\": \"{{salidaPrueba}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Modificar reserva (cambia la salida)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Recalcula las noches\", () => pm.expect(pm.response.json().noches).to.eql(4));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reservas/{{reservaNuevaId}}",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"habitacionId\": {{habitacionNuevaId}},\n  \"nombreHuesped\": \"Huésped de Prueba Postman\",\n  \"documentoHuesped\": \"DPI-200001\",\n  \"telefonoHuesped\": \"5550-2001\",\n  \"cantidadHuespedes\": 2,\n  \"fechaEntrada\": \"{{entradaPrueba}}\",\n  \"fechaSalida\": \"{{salidaPruebaModificada}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Total estimado de la reserva",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/reservas/{{reservaNuevaId}}/total",
+            "description": ""
+          }
+        },
+        {
+          "name": "Cancelar reserva",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Estado CANCELADA\", () => pm.expect(pm.response.json().estado).to.eql(\"CANCELADA\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/reservas/{{reservaNuevaId}}/cancelar",
+            "description": ""
+          }
+        },
+        {
+          "name": "Finalizar reserva en curso (ID 5)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/reservas/5/finalizar",
+            "description": "La reserva 5 de los datos de prueba está en curso. Si se ejecuta dos veces responde 422; vuelva a correr database/02_datos_prueba.sql para repetir la prueba."
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Consultas e indicadores",
+      "description": "Filtros e indicadores del proyecto.",
+      "item": [
+        {
+          "name": "Reservas por huésped (nombre)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/reservas/huesped?texto=Ana",
+            "description": ""
+          }
+        },
+        {
+          "name": "Reservas por huésped (documento)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/reservas/huesped?texto=DPI-100001",
+            "description": ""
+          }
+        },
+        {
+          "name": "Reservas activas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Todas ACTIVA\", () => pm.response.json().forEach(r => pm.expect(r.estado).to.eql(\"ACTIVA\")));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/reservas/activas",
+            "description": ""
+          }
+        },
+        {
+          "name": "Habitaciones disponibles por periodo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/habitaciones/disponibles?entrada={{entradaPrueba}}&salida={{salidaPrueba}}&huespedes=2",
+            "description": ""
+          }
+        },
+        {
+          "name": "Cotizar total estimado antes de reservar",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/reservas/cotizar?habitacionId=3&entrada={{entradaPrueba}}&salida={{salidaPrueba}}",
+            "description": ""
+          }
+        },
+        {
+          "name": "Resumen de indicadores",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/reservas/resumen",
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Validaciones, excepciones y reglas",
+      "description": "Casos que la API debe rechazar con el código HTTP correcto.",
+      "item": [
+        {
+          "name": "400 - Datos inválidos de habitación",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Incluye errores por campo\", () => pm.expect(pm.response.json().errores).to.have.property(\"capacidad\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/habitaciones",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numero\": \"\",\n  \"tipo\": \"DOBLE\",\n  \"capacidad\": 0,\n  \"tarifaNoche\": -5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "400 - Tipo de habitación no permitido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/habitaciones",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numero\": \"999\",\n  \"tipo\": \"PENTHOUSE\",\n  \"capacidad\": 2,\n  \"tarifaNoche\": 300\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "400 - Datos inválidos de reserva",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reservas",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"habitacionId\": null,\n  \"nombreHuesped\": \"\",\n  \"documentoHuesped\": \"12\",\n  \"cantidadHuespedes\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "409 - Número de habitación duplicado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/habitaciones",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numero\": \"101\",\n  \"tipo\": \"SENCILLA\",\n  \"capacidad\": 1,\n  \"tarifaNoche\": 250\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "404 - Habitación inexistente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/habitaciones/9999",
+            "description": ""
+          }
+        },
+        {
+          "name": "404 - Reserva inexistente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/reservas/9999",
+            "description": ""
+          }
+        },
+        {
+          "name": "404 - Reserva con habitación inexistente (relación)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reservas",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"habitacionId\": 9999,\n  \"nombreHuesped\": \"Huésped de Prueba Postman\",\n  \"documentoHuesped\": \"DPI-200001\",\n  \"telefonoHuesped\": \"5550-2001\",\n  \"cantidadHuespedes\": 2,\n  \"fechaEntrada\": \"{{entradaPrueba}}\",\n  \"fechaSalida\": \"{{salidaPrueba}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "422 - Regla 1: salida igual a la entrada",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reservas",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"habitacionId\": {{habitacionNuevaId}},\n  \"nombreHuesped\": \"Huésped de Prueba Postman\",\n  \"documentoHuesped\": \"DPI-200001\",\n  \"telefonoHuesped\": \"5550-2001\",\n  \"cantidadHuespedes\": 2,\n  \"fechaEntrada\": \"{{entradaPrueba}}\",\n  \"fechaSalida\": \"{{entradaPrueba}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "409 - Regla 2: reserva traslapada",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reservas",
+            "description": "La habitación 103 (ID 3) tiene reservas activas de hoy-2 a hoy+2 y de hoy+2 a hoy+6.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"habitacionId\": 3,\n  \"nombreHuesped\": \"Huésped de Prueba Postman\",\n  \"documentoHuesped\": \"DPI-200001\",\n  \"telefonoHuesped\": \"5550-2001\",\n  \"cantidadHuespedes\": 1,\n  \"fechaEntrada\": \"{{hoyMas1}}\",\n  \"fechaSalida\": \"{{hoyMas3}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "422 - Capacidad excedida",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reservas",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"habitacionId\": 1,\n  \"nombreHuesped\": \"Huésped de Prueba Postman\",\n  \"documentoHuesped\": \"DPI-200001\",\n  \"telefonoHuesped\": \"5550-2001\",\n  \"cantidadHuespedes\": 3,\n  \"fechaEntrada\": \"{{entradaPrueba}}\",\n  \"fechaSalida\": \"{{salidaPrueba}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "422 - Fecha de entrada en el pasado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reservas",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"habitacionId\": 2,\n  \"nombreHuesped\": \"Huésped de Prueba Postman\",\n  \"documentoHuesped\": \"DPI-200001\",\n  \"telefonoHuesped\": \"5550-2001\",\n  \"cantidadHuespedes\": 1,\n  \"fechaEntrada\": \"{{ayer}}\",\n  \"fechaSalida\": \"{{hoyMas1}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "422 - Modificar una reserva cancelada",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reservas/4",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"habitacionId\": 6,\n  \"nombreHuesped\": \"Huésped de Prueba Postman\",\n  \"documentoHuesped\": \"DPI-200001\",\n  \"telefonoHuesped\": \"5550-2001\",\n  \"cantidadHuespedes\": 1,\n  \"fechaEntrada\": \"{{entradaPrueba}}\",\n  \"fechaSalida\": \"{{salidaPrueba}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "422 - Desactivar habitación con reservas activas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/habitaciones/3",
+            "description": ""
+          }
+        },
+        {
+          "name": "400 - ID con formato inválido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/reservas/abc",
+            "description": ""
+          }
+        },
+        {
+          "name": "400 - Fecha con formato inválido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/habitaciones/disponibles?entrada=10-11-2026&salida={{salidaPrueba}}",
+            "description": ""
+          }
+        },
+        {
+          "name": "400 - Falta parámetro obligatorio",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/reservas/huesped",
+            "description": ""
+          }
+        }
+      ]
+    }
+  ]
+}
