@@ -1,0 +1,9 @@
+# ------------------------------------------------------------------
+# PLANTILLA de configuracion local.
+# 1. Copie este archivo y nombre la copia:  db-local.properties
+#    (en esta misma carpeta: src/main/resources)
+# 2. Escriba la contrasena que eligio al instalar PostgreSQL.
+# El archivo db-local.properties esta en .gitignore: NO se sube a GitHub.
+# ------------------------------------------------------------------
+spring.datasource.username=postgres
+spring.datasource.password=ESCRIBA_AQUI_SU_CONTRASENA
